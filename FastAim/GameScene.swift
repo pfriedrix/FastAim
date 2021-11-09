@@ -16,6 +16,8 @@ class GameScene: SKScene, UIWebViewDelegate {
     let mole = SKSpriteNode(imageNamed: "mole")
     let gameOver = SKSpriteNode(imageNamed: "gameover")
     var scoreLabel = SKLabelNode()
+    var playButton = SKSpriteNode(imageNamed: "play")
+    var popup = SKShapeNode()
     
     var moveableArea = SKNode()
     var webview = UIWebView()
@@ -27,7 +29,7 @@ class GameScene: SKScene, UIWebViewDelegate {
         background.position = CGPoint(x: 0, y: 0)
         background.zPosition = 1
         addChild(background)
-        drawMole()
+        
         
         scoreLabel.setScale(0.1)
         scoreLabel.fontSize = 32
@@ -37,6 +39,15 @@ class GameScene: SKScene, UIWebViewDelegate {
         scoreLabel.fontColor = .red
         scoreLabel.verticalAlignmentMode = .center
         
+        let defaults = UserDefaults.standard
+        let firstGame = defaults.bool(forKey: "firstGame")
+        if firstGame == false {
+            defaults.set(true, forKey: "firstGame")
+            drawPopup()
+        }
+        else {
+            drawMole()
+        }
         
         addChild(hole)
         addChild(mole)
@@ -47,6 +58,25 @@ class GameScene: SKScene, UIWebViewDelegate {
         swipeRight.direction = .right
         
         view.addGestureRecognizer(swipeRight)
+    }
+    
+    private func drawPopup() {
+        popup = SKShapeNode(rectOf: CGSize(width: frame.size.width * 0.65, height: frame.size.height * 0.5), cornerRadius: 10)
+        popup.fillColor = .red
+        popup.strokeColor = .red
+        popup.zPosition = 50
+        let rulesLabel = SKLabelNode()
+        rulesLabel.horizontalAlignmentMode = .center
+        rulesLabel.text = "You need to press the aim \n in random position 10 times.\n You win if you do it faster \n than 7 seconds. You\n lose if you are slower."
+        rulesLabel.numberOfLines = 4
+        rulesLabel.zPosition = 51
+        rulesLabel.position = CGPoint(x: 0, y: 0)
+        popup.addChild(rulesLabel)
+        playButton = SKSpriteNode(imageNamed: "play")
+        playButton.position = CGPoint(x: 0, y: -200)
+        playButton.size = CGSize(width: 200, height: 100)
+        popup.addChild(playButton)
+        addChild(popup) 
     }
     
     private func drawMole() {
@@ -75,7 +105,6 @@ class GameScene: SKScene, UIWebViewDelegate {
                 hole.zPosition = -1
                 score += 1
                 
-                
                 animateScore(score)
                 
                 if score >= 10 {
@@ -90,6 +119,9 @@ class GameScene: SKScene, UIWebViewDelegate {
                 else {
                     drawMole()
                 }
+            } else if node == playButton {
+                popup.removeFromParent()
+                drawMole()
             }
         }
     }
